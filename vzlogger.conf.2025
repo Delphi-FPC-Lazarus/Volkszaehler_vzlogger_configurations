@@ -1,0 +1,68 @@
+/**
+ * vzlogger configuration
+ *
+ * Use properly encoded JSON with javascript comments
+ *
+ * Take a look at the wiki for detailed information:
+ * http://wiki.volkszaehler.org/software/controller/vzlogger#configuration
+ *
+ * For an online configuration editor refer to:
+ * http://volkszaehler.github.io/vzlogger/
+ */
+
+{
+    // General settings
+    // Verbosity beachten um die Speicherkarte nicht zu schrotten
+    "verbosity": 3,         // log verbosity (0=log_alert, 1=log_error, 3=log_warning, 5=log_info, 10=log_debug, 15=log_finest)
+    "log": "/var/log/vzlogger/vzlogger.log", // log file, optional
+    "retry": 30,            // http retry delay in seconds
+
+    // Build-in HTTP server
+    // Bereitstellung für Datensammelscript und Akku Leistungsregelung
+    "local": {
+        "enabled": true,    // enable local HTTPd for serving live readings
+        "port": 8081,       // TCP port for local HTTPd
+        "index": true,      // provide index listing of available channels if no UUID was requested
+        "timeout": 30,      // timeout for long polling comet requests in seconds (0 disables comet)
+        "buffer": -1        // HTTPd buffer configuration for serving readings, default -1
+                            //   >0: number of seconds of readings to serve
+                            //   <0: number of tuples to server per channel (e.g. -3 will serve 3 tuples)
+    },
+
+    // Meter configuration
+    // Es ist nur ein Meter auf einem physikalischen Gerät möglich da FIFO geleert wird, pro Meter gibt es nur eine aggtime
+    "meters": [
+    {
+      "enabled": true,
+      "allowskip": false,
+      "interval":0,
+      "aggtime": 3, // kurzes Intervall für Akku Leistungsregelung
+      // bis der Wert den Realen Messwert erreicht dauert doppelt so lang
+      // ist der Wert zu gering, springt er
+      "aggfixedinterval": true,
+
+      "channels": [
+        {
+          "identifier": "1-0:16.7.0*255",
+          "aggmode": "avg",
+          "duplicates": 0,
+          // kein automatisches einspeisen in die midleware da aggtime sehr klein (bereitstellung siehe local)
+          "api": "null",
+          "uuid": "00000000-0000-0000-0000-000000000000",
+
+          //"api": "volkszaehler",
+          //"middleware": "http://127.0.0.1/middleware.php",
+          //"uuid": "e88996c0-7eb7-11ec-b81a-3be93fc4029e",
+        }
+      ],
+
+      "protocol": "sml",
+      "device": "/dev/ttyUSB0",
+      "baudrate": 9600,
+      "parity": "8n1",
+      "baudrate_change_delay": 0,
+      "use_local_time": true
+    }
+  ]
+}
+
